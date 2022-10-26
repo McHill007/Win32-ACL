@@ -142,7 +142,6 @@ sub getSACL
 sub __setPrivilige 
 {
 	my $phToken = pack("L", 0);
-	print "TEST\n" ;
 	if($OpenProcessToken->Call(Win32::Security::Raw::GetCurrentProcess(),TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,$phToken)) 
 	{
 		my $hToken = unpack("L", $phToken);
