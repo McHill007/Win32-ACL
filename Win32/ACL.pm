@@ -69,9 +69,10 @@ sub getDACL
 	my @DACLS = () ;
 
 	Carp::croak("Win32::ACL::getSACL - No filename/directory specified.") if ( ! $IOobj ) ;
-	Carp::croak("Win32::ACL::getSACL - File or Directory does not exist.") if ( !-f $IOobj && !-d $IOobj ) ;
+	Carp::croak("Win32::ACL::getSACL - File or Directory $IOobj does not exist.") if ( !-f $IOobj && !-d $IOobj ) ;
 
 	my $acl = Win32::Security::NamedObject->new('SE_FILE_OBJECT', $IOobj);
+	return ( @DACLS ) unless ( $acl ) ;
 	my $dacl = $acl->dacl();
 	$dacl->dump() ;
 	foreach my $daclitem ( $dacl->aces )
@@ -105,14 +106,18 @@ sub getSACL
 	my @SACLS = () ;	
 	
 	Carp::croak("Win32::ACL::getSACL - No filename/directory specified.") if ( ! $IOobj ) ;
-	Carp::croak("Win32::ACL::getSACL - File or Directory does not exist.") if ( !-f $IOobj && !-d $IOobj ) ;
+	Carp::croak("Win32::ACL::getSACL - File or Directory $IOobj does not exist.") if ( !-f $IOobj && !-d $IOobj ) ;
+	
+
 	
 	my($ppsidOwner, $ppsidGroup, $ppDacl, $ppSacl, $ppSecurityDescriptor) =
 	Win32::Security::Raw::GetNamedSecurityInfo($IOobj, 'SE_FILE_OBJECT' , 'SACL_SECURITY_INFORMATION'); 
-
+	return ( @SACLS ) unless ( $ppSacl ) ;
 	my($AceCount, $AclBytesInUse, $AclBytesFree) = Win32::Security::Raw::GetAclInformation($ppSacl, 'AclSizeInformation');
 	my $sacl = Win32::Security::ACL::SE_FILE_OBJECT->new(Win32::Security::Raw::CopyMemory_Read($ppSacl, $AclBytesInUse));
+	
 	$sacl->dump();
+	
 	foreach my $saclitem ( $sacl->aces )
 	{
 		my %SACLInformation = (
